@@ -1,0 +1,58 @@
+
+.nav-link {
+    color: brown !important;
+    }
+* {
+    border-radius: 5px;
+    }
+
+body.thumb {
+    transform: scale(0.4);
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+    }
+
+main {
+    min-height: 80vh;
+    }
+
+[class*='container'] {
+    border: 1px dashed #eee;
+    background-clip: content-box;
+    }
+
+.row [class*='col'] {
+    background-color: #efefef;
+    background-clip: content-box;
+    }
+
+.nav-item {
+    background-color: #eeeeff;
+    background-clip: content-box;
+}
+.btn-brown {
+    background-color: #8B4513;
+    border-color: #8B4513;
+}
+.btn-brown:hover {
+    background-color: #A0522D; /* Warna coklat lebih terang saat hover */
+    border-color: #A0522D;
+}
+h4 {
+    color: brown; /* Set the text color to brown */
+}
+
+h6 {
+    font-weight: bold;
+}
+
+/* Show the submenu when hovering over the parent menu item */
+.dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+/* Optional: Adjust the submenu width and position as needed */
+.dropdown-menu {
+    min-width: 10rem;
+    left: auto; /* Adjust if needed */
+    right: 0;   /* Adjust if needed */
+}
