@@ -1,0 +1,93 @@
+<script>
+    // ... Your existing jQuery script ...
+
+    $(document).ready(function() {
+        // ... Your existing jQuery code ...
+
+        // Dropdown selection for recommendation type
+        $(".recommendation-dropdown").change(function() {
+            var selectedType = $(this).val();
+            $(".promotion-content").slideUp(); // Close all recommendation sections
+            $("#" + selectedType + "-promotions").slideDown(); // Open the selected recommendation section
+        });
+    });
+</script>
+
+<header class="py-3 mb-3 border-bottom shadow">
+    <div class="container-fluid align-items-center d-flex">
+        <div class="flex-shrink-1">
+            <a href="#" class="d-flex align-items-center col-lg-4 mb-2 mb-lg-0 link-dark text-decoration-none">
+                <i class="bi bi-bootstrap fs-2 text-dark"></i>
+            </a>
+        </div>
+        <div class="flex-grow-1 d-flex align-items-center">
+            <div class="d-flex align-items-center me-3">
+                <img src="/static/logo.png" alt="user" width="32" height="32" class="rounded-circle">
+                <h6 class="mb-0 ms-2">TOVI KOHI</h6>
+            </div>
+            <form class="w-100 me-3">
+                <!-- Your form elements go here -->
+            </form>
+        </div>
+        
+        
+        </div>
+        
+    </div>
+</header>
+<div class="container-fluid pb-3 flex-grow-1 d-flex flex-column flex-sm-row overflow-auto " style="color: #3F2E3E;">
+    <div class="w-100 row flex-grow-sm-1 flex-grow-0">
+        <aside class="col-sm-2 flex-grow-sm-1 flex-shrink-1 flex-grow-0 sticky-top pb-sm-0 pb-3">
+            <div class="bg-light border rounded-3 p-1 h-100 sticky-top">
+                <ul class="nav nav-pills flex-sm-column flex-row mb-auto justify-content-between text-truncate">
+                    <li>
+                        <a href="/upload" class="nav-link px-2 text-truncate">
+                            <i class="bi bi-speedometer fs-5"></i>
+                            <span class="d-none d-sm-inline">Unggah Data</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/select_attributes" class="nav-link px-2 text-truncate{% if data_uploaded %}"{% endif %}>
+                            <i class="bi bi-card-text fs-5"></i>
+                            <span class="d-none d-sm-inline">Pemilihan Atribut</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/cleaning" class="nav-link px-2 text-truncate">
+                            <i class="bi bi-bricks fs-5"></i>
+                            <span class="d-none d-sm-inline">Pembersihan Data</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/build" class="nav-link px-2 text-truncate">
+                            <i class="bi bi-people fs-5"></i>
+                            <span class="d-none d-sm-inline">Pembangunan Data</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/integration" class="nav-link px-2 text-truncate">
+                            <i class="bi bi-people fs-5"></i>
+                            <span class="d-none d-sm-inline">Integrasi Data</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/transformation" class="nav-link px-2 text-truncate">
+                            <i class="bi bi-people fs-5"></i>
+                            <span class="d-none d-sm-inline">Transformasi Data</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/clustering" class="nav-link px-2 text-truncate">
+                            <i class="bi bi-people fs-5"></i>
+                            <span class="d-none d-sm-inline">Model Clustering</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="loyalty_promo" class="nav-link px-2 text-truncate">
+                            <i class="bi bi-people fs-5"></i>
+                            <span class="d-none d-sm-inline">Rekomendasi Promosi</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </aside>
