@@ -5,7 +5,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 import numpy as np
 os.environ["OMP_NUM_THREADS"] = '1'
-import scipy.stats as stats
+
 
 # Set tampilan desimal menjadi 6 digit
 pd.set_option('display.float_format', '{:.6f}'.format)
@@ -16,23 +16,30 @@ app.config['UPLOAD_FOLDER'] = 'uploads'
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
     os.makedirs(app.config['UPLOAD_FOLDER'])
 
+expected_filename1 = 'riwayat-transaksi2022-2023.xlsx'  # Nama file yang diharapkan untuk file pertama
+expected_filename2 = 'Data Member.xlsx'  # Nama file yang diharapkan untuk file kedua
+
+def is_valid_filename(filename, expected_filename):
+    return filename == expected_filename
+
 # Variabel global untuk menyimpan DataFrame setelah proses cleaning
 df1 = None
 df2 = None
 recency_df = None
 frequency_df = None
 monetary_df = None
-menu_member = None
 common_menu = None
 df_seleksi = None
+seleksi2 = None
 df_seleksi2 = None
 data_uploaded = False
 data_cleaned = False
 integrated_data1 = None
 integrated_data2 = None
 scaled = None
-merged_result_table = None
+final_karaktertistik = None
 clustering_result = None
+
 
 @app.route('/')
 def index():
@@ -55,6 +62,10 @@ def upload():
 
         # Periksa apakah file-file memiliki ekstensi xlsx
         if file1 and file1.filename.endswith('.xlsx') and file2 and file2.filename.endswith('.xlsx'):
+            # Periksa apakah nama file sesuai dengan yang diharapkan
+            if not is_valid_filename(file1.filename, expected_filename1) or not is_valid_filename(file2.filename, expected_filename2):
+                return 'Maaf, Kamu Salah Menginputkan Data. Coba Kembali'
+            
             # Simpan file-file di folder uploads
             file1.save(os.path.join(app.config['UPLOAD_FOLDER'], file1.filename))
             file2.save(os.path.join(app.config['UPLOAD_FOLDER'], file2.filename))
@@ -70,6 +81,7 @@ def upload():
             return 'Hanya file dengan ekstensi .xlsx yang diizinkan.'
 
     return render_template('upload.html', data_uploaded=data_uploaded)
+
 
 def calculate_common_menu(dataframe):
     produk = dataframe[['ID Member', 'Deskripsi Produk', 'Jumlah Barang']]
@@ -96,7 +108,7 @@ def read():
   
 @app.route('/select_attributes')
 def select_attributes():
-    global df1, df2, df_seleksi, data_uploaded, df_seleksi2
+    global df1, df2, df_seleksi, data_uploaded, df_seleksi2, seleksi2
 
     # Check if data has been loaded through the 'read' function
     # Check if data has not been loaded through the 'read' function
@@ -162,7 +174,7 @@ def cleaning():
 
 @app.route('/build')
 def build_data():
-    global df_seleksi, common_menu,recency_df, frequency_df, monetary_df, menu_member  # Gunakan variabel global rfm
+    global df_seleksi, common_menu,recency_df, frequency_df, monetary_df  # Gunakan variabel global rfm
     # Ambil nama file dari parameter URL
     if df_seleksi is not None:
         # Calculate common_menu data
@@ -199,31 +211,46 @@ def build_data():
         #combine first recency and frequency..
         
         if recency_df is not None and frequency_df is not None and monetary_df is not None:
-            recency_df = recency_df.head(5).copy()  # Ambil 5 data pertama untuk contoh
-            frequency_df = frequency_df.head(5).copy()
-            monetary_df = monetary_df.head(5).copy()
-            menu_member = common_menu.head(5).copy()
+            recency_df.copy()
+            frequency_df.copy()
+            monetary_df.copy()
+            common_menu.copy()
+            r= recency_df.head(10).copy() # Ambil 5 data pertama untuk contoh
+            f= frequency_df.head(10).copy()
+            m = monetary_df.head(10).copy()
+            menu = common_menu.head(10).copy()
+            dimensi5 = recency_df.shape
+            dimensi6 = frequency_df.shape
+            dimensi7 = monetary_df.shape
+            dimensi8 = common_menu.shape
     else:
         error_message = "Tidak ada data yang dipilih atau belum dilakukan pemilihan atribut."
         return render_template('error.html', error_message=error_message)
 
-    return render_template('build_results.html', recency_df=recency_df, frequency_df = frequency_df, monetary_df = monetary_df, menu_member = menu_member)
+    return render_template('build_results.html', r=r, f = f, m = m, 
+                           menu = menu, dimensi5=dimensi5, dimensi6=dimensi6,dimensi7=dimensi7, dimensi8=dimensi8)
 
 @app.route('/integration')
 def integration():
-    global recency_df, frequency_df, monetary_df, common_menu, df_seleksi2, menu_member, integrated_data1, integrated_data2
+    global recency_df, frequency_df, monetary_df, common_menu, seleksi2, integrated_data1, integrated_data2
 
     # Pastikan data sudah tersedia sebelum melakukan integrasi
-    if recency_df is not None and frequency_df is not None and monetary_df is not None and menu_member is not None and df_seleksi2 is not None:
+    if recency_df is not None and frequency_df is not None and monetary_df is not None and common_menu is not None and seleksi2 is not None:
         # Gabungkan recency_df, frequency_df, dan monetary_df berdasarkan kolom 'ID Member'
         integrated_data1 = pd.merge(recency_df, frequency_df, on='ID Member')
         integrated_data1 = pd.merge(integrated_data1, monetary_df, on='ID Member')
 
         # Gabungkan common_menu dengan df_seleksi2 berdasarkan kolom 'ID Member'
-        integrated_data2 = pd.merge(menu_member, df_seleksi2, on='ID Member')
-        integrated_data1.head(5).copy()
-        integrated_data2.head(5).copy()
-        return render_template('integration_results.html', integrated_data1=integrated_data1, integrated_data2=integrated_data2)
+        integrated_data2 = pd.merge(common_menu, seleksi2, on='ID Member')
+        integrated_data1.copy()
+        integrated_data2.copy()
+
+        i1 = integrated_data1.head(10).copy()
+        i2 = integrated_data2.head(10).copy()
+
+        dimensi9 = integrated_data1.shape
+        dimensi10 = integrated_data2.shape
+        return render_template('integration_results.html', i1=i1, i2=i2, dimensi9=dimensi9, dimensi10=dimensi10)
     else:
         error_message = "Data belum lengkap. Lakukan pemrosesan sebelum melakukan integrasi."
         return render_template('error.html', error_message=error_message)
@@ -235,10 +262,17 @@ def transformation():
     if integrated_data1 is not None:
         # Normalisasi dengan Z-Score
         rfm = integrated_data1.copy()
-        # Membuat DataFrame baru dengan memilih kolom tertentu
-        scaled = (rfm - rfm.mean()) / rfm.std(ddof=0)
         
-        return render_template('transformation_results.html', scaled=scaled)
+        # Normalisasi dengan Z-Score
+        scaler = StandardScaler()
+        scaled_data = scaler.fit_transform(rfm[['Recency', 'Frequency', 'Monetary']])
+        
+        # Create a DataFrame with the scaled data
+        scaled = pd.DataFrame(scaled_data, columns=['Recency', 'Frequency', 'Monetary'])
+        
+        sc = scaled.head(10).copy()
+        dimensi11 = scaled.shape
+        return render_template('transformation_results.html', sc=sc, dimensi11=dimensi11)
     else:
         error_message = "Data belum tersedia. Lakukan pemrosesan sebelum melakukan transformasi."
         return render_template('error.html', error_message=error_message)
@@ -246,67 +280,57 @@ def transformation():
 
 @app.route('/clustering', methods=['GET', 'POST'])
 def clustering():
-    global scaled,integrated_data1, integrated_data2,clustering_result,merged_result_table,cluster_means  # Gunakan variabel global df1
-    if scaled is not None:
-        integrated_data1.copy()
-        integrated_data2.copy()
-        # Initiating the KMeans Clustering model 
-        kmeans = KMeans(n_clusters=3)
-        # fit model and predict clusters
-        integrated_data1["Clusters"] = kmeans.fit_predict(scaled)
-        integrated_data1['Clusters'] = integrated_data1['Clusters'].astype(int)
-        # Simpan hasil clustering dalam variabel clustering_result
-        # Simpan hasil clustering dalam variabel clustering_result
-        # Assuming rfm DataFrame contains the 'Clusters' attribute as a string data type
-            
-        clustering_result = integrated_data1.head(10)
-        # Merge common_menu and rfm based on 'ID Member'
-        karakteristik = pd.merge(integrated_data2, integrated_data1, on='ID Member', how='inner')
-        # Simpan hasil merge dalam variabel merged_result
+    global scaled,integrated_data1, integrated_data2,clustering_result,final_karaktertistik,cluster_means
 
-        # Hitung nilai rata-rata Recency, Frequency, dan Monetary untuk setiap cluster
+    if scaled is not None:
+        integrated_data1 = integrated_data1.copy()  # Copy dataframe to make changes
+        integrated_data2 = integrated_data2.copy()  # Copy dataframe to make changes
+
+        kmeans = KMeans(n_clusters=3)
+        fit_model = kmeans.fit_predict(scaled)
+
+        integrated_data1["Clusters"]= fit_model
+        result = integrated_data1.copy()
+        clustering_result = integrated_data1.head(10)
+
+        karakteristik = pd.merge(integrated_data2, integrated_data1, on='ID Member', how='inner')
+
         cluster_means = karakteristik.groupby('Clusters').mean()[['Recency', 'Frequency', 'Monetary']]
 
-        # Tentukan kriteria untuk masing-masing label pada setiap kolom
-        score = cluster_means['Frequency'] + cluster_means['Monetary'] - cluster_means['Recency']
+        cluster_means['NLoyalitas'] = cluster_means['Frequency'] + cluster_means['Monetary'] - cluster_means['Recency']
+        cluster_means.sort_values(by='NLoyalitas', ascending=False, inplace=True)
 
-        # Berikan label pada setiap cluster berdasarkan kriteria
-        cluster_labels = []
-        for cluster in cluster_means.index:
-            recency = cluster_means.loc[cluster, 'Recency']
-            frequency = cluster_means.loc[cluster, 'Frequency']
-            monetary = cluster_means.loc[cluster, 'Monetary']
-                
-            if score.loc[cluster] == score.max():
-                cluster_labels.append('Tinggi')
-            elif score.loc[cluster] == score.min():
-                cluster_labels.append('Rendah')
-            else:
-                cluster_labels.append('Sedang')
+        cluster_means['Keterangan'] = 'Tinggi'
+        cluster_means.loc[cluster_means.index[1:], 'Keterangan'] = 'Sedang'
+        cluster_means.loc[cluster_means.index[2:], 'Keterangan'] = 'Rendah'
 
-        # Tambahkan kolom label ke dalam dataframe hasil clustering
-        karakteristik['Loyalitas'] = karakteristik['Clusters'].map(dict(zip(cluster_means.index, cluster_labels)))
-
+        cluster_labels = ['Cluster {}'.format(i+1) for i in range(len(cluster_means))]
+        karakteristik['Cluster_Label'] = karakteristik['Clusters'].map(dict(zip(cluster_means.index, cluster_labels)))
+        karakteristik['Keterangan'] = karakteristik['Clusters'].map(dict(zip(cluster_means.index, cluster_means['Keterangan'])))
+        
         final_karaktertistik = karakteristik.copy()
-        # Tampilkan hasil label untuk setiap cluster
-        merged_result_table = final_karaktertistik.head(10)
-        return render_template('clustering_results.html', clustering_result=clustering_result, merged_result_table=merged_result_table)
+        merged_result_table = final_karaktertistik.head()
+        dimensi12 = result.shape
+        dimensi13 = final_karaktertistik.shape
+        
+        return render_template('clustering_results.html', clustering_result=clustering_result, merged_result_table=merged_result_table,
+                               dimensi12=dimensi12,dimensi13=dimensi13)
     else:
         return 'Tidak ada data yang diunggah atau belum dilakukan pembersihan data.'
 
 @app.route('/loyalty_promo')
 def loyalty_promo():
-    global merged_result_table
+    global final_karaktertistik
 
     # Inisialisasi dictionary untuk menyimpan rekomendasi promosi untuk setiap cluster
     promotions_by_cluster = {}
-    member_data = merged_result_table.copy()
+    member_data = final_karaktertistik.copy()
     for index, row in member_data.iterrows():
         # Mendapatkan nilai rata-rata Recency, Frequency, dan Monetary untuk cluster ini
         recency = row['Recency']
         frequency = row['Frequency']
         monetary = row['Monetary']
-        cluster = row['Loyalitas']
+        cluster = row['Keterangan']
 
         # Rekomendasi promosi untuk masing-masing cluster berdasarkan nilai Recency, Frequency, dan Monetary
         if cluster == 'Tinggi':
@@ -324,91 +348,14 @@ def loyalty_promo():
     return render_template('recommendation_results.html', promotions_by_cluster=promotions_by_cluster)
 
 
-
-def recommend_low_loyalty_promotions(clustering_result, merged_result_table):
-    # Dictionary untuk menyimpan rekomendasi untuk setiap pelanggan
-    recommendations = {}
-    merged_result_table.copy()
-    clustering_result.copy()
-    # Filter data hanya untuk pelanggan dengan nilai loyalitas "Rendah"
-    low_loyalty_customers = merged_result_table[merged_result_table['Loyalitas'] == 'Rendah']
+@app.route('/promosi_tinggi', methods=['GET', 'POST'])
+def promosi_tinggi():
     
-    for index, row in merged_result_table.iterrows():
-        # Cek apakah pelanggan memiliki item favorit yang sering dibeli
-        favorite_menu = row['Deskripsi Produk']
-        if favorite_menu:
-            recommendation = f"Promo eksklusif untuk Anda! Dapatkan diskon 20% untuk {favorite_menu} pada pembelian berikutnya. Tunjukkan Pesan ini ke kasir untuk claim promosi"
-        else:
-            # Jika tidak ada item favorit, berikan kampanye "Selamat Datang Kembali"
-            recommendation = "Kami merindukan Anda! Aktifkan kembali minat Anda dengan diskon 15% untuk pembelian berikutnya. Tunjukkan Pesan ini ke kasir untuk claim promosi"
-        
-        # Simpan rekomendasi dalam dictionary dengan ID Member sebagai kunci
-        recommendations[row['ID Member']] = recommendation
-    
-    return recommendations
+    return render_template("promosi_tinggi.html")
 
-# Function to recommend promotions for medium loyalty customers
-def recommend_medium_loyalty_promotions(merged_result_table,clustering_result ):
-    recommendations = []
-    merged_result_table.copy()
-    clustering_result.copy()
-    for index, row in merged_result_table.iterrows():
-        customer_id = row['ID Member']
-        customer_name = row['Nama']
-        favorite_items = row['Deskripsi Produk']
-        
-        # Recommendation 1: Offer a discount on their next purchase based on their average monetary value
-        discount_percentage = int(row['Monetary'] * 0.1)  # 10% discount based on average monetary value
-        promotion1 = f"Halo {customer_name}, Selamat mendapatkan {discount_percentage}% diskon pada pembelian berikutnya. Gunakan Kode 'LOYAL10' saat membayar di kasir. Ayo ke Tovi Kohi Sekarang Juga!"
-        recommendations.append(promotion1)
-        
-        # Recommendation 2: Send a personalized offer for their most frequent item
-        most_frequent_item = row['Deskripsi Produk'].split(',')[0]  # Assuming items are separated by comma
-        promotion2 = f"Halo {customer_name}, Kami memiliki penawaran khusus hanya untuk Anda! Dapatkan diskon 20% untuk menu {most_frequent_item}. Gunakan Kode 'FREQ20' dan manjakan diri Anda dengan menu favorit Anda!"
-        recommendations.append(promotion2)
-    
-    return recommendations
-
-# Function to recommend promotions for high loyalty customers
-def recommend_high_loyalty_promotions(merged_result_table,clustering_result):
-    recommendations = []
-    merged_result_table.copy()
-    clustering_result.copy()
-    for index, row in merged_result_table.iterrows():
-        customer_id = row['ID Member']
-        customer_name = row['Nama']
-        favorite_items = row['Deskripsi Produk']
-        
-        # Recommendation 1: Offer a personalized discount on their next purchase based on their average monetary value
-        discount_percentage = int(row['Monetary'] * 0.15)  # 15% discount based on average monetary value
-        promotion1 = f"Halo {customer_name}, sebagai member Kami yang berharga, kami senang untuk menawarkan Anda {discount_percentage}% diskon pada pembelian berikutnya. Gunakan kode 'LOYAL15' saat membayar di kasir. Belanja sekarang dan nikmati diskon eksklusif!"
-        recommendations.append(promotion1)
-        
-        # Recommendation 2: Invite them to a special loyalty event with their favorite items
-        promotion2 = f"Pelanggan yang terhormat {customer_name}, Anda diundang ke tempat kami. Nikmati malam yang menyenangkan dengan potongan 50% menu favorit Anda: {favorite_items}. Jangan lewatkan promosi spesial ini! Tunjukkan Pesan ini ke kasir untuk claim promosi."
-        recommendations.append(promotion2)
-    
-    return recommendations
-
-@app.route('/promotion_recommendations')
-def promotion_recommendations():
-    # Assume you have the DataFrame for each loyalty cluster (low_loyalty_customers, medium_loyalty_customers, high_loyalty_customers)
-    # You can pass these DataFrames to the respective promotion recommendation functions
-
-    # Get promotion recommendations for low loyalty customers
-    low_loyalty_promotions = recommend_low_loyalty_promotions(merged_result_table,clustering_result)
-
-    # Get promotion recommendations for medium loyalty customers
-    medium_loyalty_promotions = recommend_medium_loyalty_promotions(merged_result_table,clustering_result)
-
-    # Get promotion recommendations for high loyalty customers
-    high_loyalty_promotions = recommend_high_loyalty_promotions(merged_result_table,clustering_result)
-
-    return render_template('recommendation_results.html',
-                           low_loyalty_promotions=low_loyalty_promotions,
-                           medium_loyalty_promotions=medium_loyalty_promotions,
-                           high_loyalty_promotions=high_loyalty_promotions)
-
-
+@app.route('/sendpromo', methods=['GET', 'POST'])
+def sendpromo():
+   
+    return render_template('sendpromo.html')
 if __name__ == '__main__':
     app.run(debug=True)
